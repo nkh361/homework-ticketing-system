@@ -2,21 +2,6 @@ import datetime, sqlite3, json
 from os import path
 from flask import Flask, request
 
-"""
- things i need:
- - sql RDB
- - flask
- 
- sql fields:
- - ID
- - class title
- - assignment name
- - difficulty
- - status
-
- schedule jobs by diffuclty
-"""
-
 def createRDB():
  con = sqlite3.connect('assignments.db')
  cur = con.cursor()
@@ -26,9 +11,10 @@ def createRDB():
 
 def checkforDB():
   if path.exists('assignments.db') == False:
-    createRDB()
+    createRDB() 
   else:
     create_entry()
+    return True
 
 def create_entry():
   # temp prototyping to make sure creating entries works
@@ -38,14 +24,23 @@ def create_entry():
   status = input("Enter assignment status: ")
   data = {}
   data['assignments'] = []
+  ID = gen_ID()
   data['assignments'].append({
+      'ID': ID + 1,
       'class': class_title,
       'assignment': assignment,
       'difficulty': difficulty,
       'status': status
       })
   print("success!")
-  with open('data.txt', 'a') as outfile:
+  with open('data.json', 'a') as outfile:
     json.dump(data, outfile)
+  return outfile
+
+def gen_ID():
+  f = open('data.json')
+  json_file = json.load(f)
+  ID = len(json_file['assignments'])
+  return ID
 
 create_entry()
