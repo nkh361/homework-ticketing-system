@@ -1,4 +1,4 @@
-import sqlite3, json, datetime
+import sqlite3, json, datetime 
 from os import path
 
 def createRDB():
@@ -15,5 +15,11 @@ def checkforDB():
   else:
     return True
 
-#def create_entry_RDB():
-  
+def create_entry_RDB():
+  json_file = open('data.json')
+  data = json.load(json_file)
+  for entry in data['class']:
+    print(entry)
+  json_file.close()
+
+create_entry_RDB()
