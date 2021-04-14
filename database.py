@@ -1,4 +1,5 @@
 import sqlite3, json, datetime
+from os import path
 
 def createRDB():
  con = sqlite3.connect('assignments.db')
@@ -14,5 +15,5 @@ def checkforDB():
   else:
     return True
 
-def create_entry_RDB():
+#def create_entry_RDB():
   

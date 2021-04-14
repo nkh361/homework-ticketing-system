@@ -1,20 +1,11 @@
-import datetime, sqlite3, json
-from os import path
+import datetime, sqlite3, json, database 
 from flask import Flask, request
 
-def createRDB():
- con = sqlite3.connect('assignments.db')
- cur = con.cursor()
- table_create = 'CREATE TABLE assigments (ID int, CLASS_TITLE text, ASSIGNMENT text, DIFFICULTY int, STATUS text)'
- con.commit()
- con.close()
-
-def checkforDB():
-  if path.exists('assignments.db') == False:
-    createRDB() 
+def create_DB():
+  if database.checkforDB() is False:
+    database.createRDB()
   else:
-    create_entry()
-    return True
+    pass
 
 def create_entry():
   # temp prototyping to make sure creating entries works
@@ -43,4 +34,4 @@ def gen_ID():
   ID = len(json_file['assignments'])
   return ID
 
-create_entry()
+# create_entry()
