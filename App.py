@@ -1,5 +1,6 @@
 import datetime, sqlite3, json, database 
 from flask import Flask, request
+from os import path
 
 def create_DB():
   if database.checkforDB() is False:
@@ -24,14 +25,20 @@ def create_entry():
       'status': status
       })
   print("success!")
-  with open('data.json', 'a') as outfile:
-    json.dump(data, outfile)
+  if path.exists('data.json') == False:
+    with open('data.json', 'w') as outfile:
+      json.dump(data, outfile)
+  else:
+    with open('data.json', 'a') as outfile:
+      json.dump(data, outfile)
   return outfile
+
+
 
 def gen_ID():
   f = open('data.json')
   json_file = json.load(f)
+  if json_file 
   ID = len(json_file['assignments'])
   return ID
 
-# create_entry()
