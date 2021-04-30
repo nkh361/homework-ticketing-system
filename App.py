@@ -2,6 +2,10 @@ import datetime, sqlite3, json, database, os
 from flask import Flask, request
 from os import path
 
+"""
+fix ID, json dump
+"""
+
 def create_entry():
     # temp prototyping to make sure creating entries works
     class_title = input("Enter a class: ")
