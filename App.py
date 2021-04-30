@@ -2,12 +2,6 @@ import datetime, sqlite3, json, database, os
 from flask import Flask, request
 from os import path
 
-def create_DB():
-  if database.checkforDB() is False:
-    database.createRDB()
-  else:
-    pass
-
 def create_entry():
     # temp prototyping to make sure creating entries works
     class_title = input("Enter a class: ")
@@ -15,22 +9,33 @@ def create_entry():
     difficulty = input("Enter difficulty on scale 1-10: ")
     status = input("Enter assignment status: ")
     data = {}
-    data['assignments'] = []
-    ID = gen_ID()
-    data['assignments'].append({
-        'ID': ID + 1,
-        'class': class_title,
-        'assignment': assignment,
-        'difficulty': difficulty,
-        'status': status
-        })
+    data['assignments'] = [{}]
+   
     print("success!")
     if path.exists('data.json') == False:
-        with open('data.json', 'w') as outfile:
-            json.dump(data, outfile)
+        with open('data.json', 'w') as outfile: 
+            ID = gen_ID()
+            data['assignments'].append({
+                'ID': ID + 1,
+                'class': class_title,
+                'assignment': assignment,
+                'difficulty': difficulty,
+                'status': status
+                })
+            json.dumps(data, outfile)
+        print("success!")
     else:
         with open('data.json', 'a') as outfile:
-            json.dump(data, outfile)
+            ID = gen_ID()
+            data['assignments'].append({
+                'ID': ID + 1,
+                'class': class_title,
+                'assignment': assignment,
+                'difficulty': difficulty,
+                'status': status
+                })
+            json.dumps(data, outfile)
+        print("success")
     return outfile
 
 def gen_ID():
@@ -40,11 +45,9 @@ def gen_ID():
     else:
         f = open('data.json')
         json_file = json.load(f)
-        for entry in json_file['assignments']:
-            print(entry)
+        for element in json_file['assignments']:
+            ID = element['ID']
+        
     return ID
 
 create_entry()
-
-def sql_brrr():
-

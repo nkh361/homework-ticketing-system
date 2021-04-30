@@ -20,5 +20,3 @@ def create_entry_sql():
     f = open('data.json')
     json_file = json.load(f)
     print(json_file['assignments'])
-
-create_entry_sql()
