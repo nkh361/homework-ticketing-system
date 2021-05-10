@@ -27,16 +27,18 @@ def create_entry_json():
             json.dump(data, outfile)
         print("success!")
     else:
-        with open('data.json', 'a') as outfile:
+        with open('data.json', 'r+') as outfile:
             ID = gen_ID()
-            data['assignments'].append({
+            json_dict = json.load(outfile)
+            json_dict['assignments'].append({
                 'ID': ID + 1,
                 'class': class_title,
                 'assignment': assignment,
                 'difficulty': difficulty,
                 'status': status
                 })
-            json.dump(data, outfile)
+            outfile.seek(0) # reset the file pointer to position 0
+            json.dump(json_dict, outfile, indent=4)
         print("success")
     return outfile
 

@@ -1,1 +1,18 @@
-{"assignments": [{"ID": 1, "class": "mcs", "assignment": "project 6", "difficulty": "5", "status": "open"}]}{"assignments": [{"ID": 2, "class": "mcs", "assignment": "lol", "difficulty": "8", "status": "open"}]}
+{
+    "assignments": [
+        {
+            "ID": 1,
+            "class": "test",
+            "assignment": "test",
+            "difficulty": "4",
+            "status": "open"
+        },
+        {
+            "ID": 2,
+            "class": "test",
+            "assignment": "test",
+            "difficulty": "3",
+            "status": "open"
+        }
+    ]
+}
