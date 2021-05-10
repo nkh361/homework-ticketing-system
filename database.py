@@ -1,22 +1,24 @@
-import sqlite3, json, datetime 
-import os
+import sqlite3, json, datetime, os
+import pandas as pd
 from os import path
 
-def createRDB():
-    con = sqlite3.connect('assignments.db')
-    cur = con.cursor()
-    table_create = 'CREATE TABLE assigments (ID int, CLASS_TITLE text, ASSIGNMENT text, DIFFICULTY int, STATUS text)'
-    con.commit()
-    con.close()
-
-def checkforDB():
-    if path.exists('assignments.db') == False:
-        createRDB()
-        return False
-    else:
-        return True
+sql_file = 'assignments.db'
 
 def create_entry_sql():
-    f = open('data.json')
-    json_file = json.load(f)
-    print(json_file['assignments'])
+    with open('data.json', 'r') as f:
+        data = json.loads(f.read())
+    df_assignments = pd.json_normalize(data, record_path=['assignments'])
+    # sql stuff starts here
+    conn = sqlite3.connect(sql_file)
+    df_assignments.to_sql('assignments', conn)
+
+# create_entry_sql()
+
+def display_all_assignments():
+    conn = sqlite3.connect(sql_file)
+    cur = conn.cursor()
+    sql_statement = "SELECT * FROM assignments"
+    query = cur.execute(sql_statement)
+    for entry in query:
+        print(entry)
+display_all_assignments()

@@ -26,6 +26,15 @@
             "difficulty": "4",
             "status": "open",
             "time to complete": "60"
+        },
+        {
+            "ID": 4,
+            "creation date": "2021-05-10",
+            "class": "math",
+            "assignment": "hw",
+            "difficulty": "4",
+            "status": "open",
+            "time to complete": "20"
         }
     ]
 }
