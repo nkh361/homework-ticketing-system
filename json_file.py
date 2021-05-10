@@ -1,5 +1,6 @@
-import datetime, sqlite3, json, database, os
+import sqlite3, json, database, os
 from flask import Flask, request
+from datetime import date
 from os import path
 
 """
@@ -12,6 +13,8 @@ def create_entry_json():
     assignment = input("Enter assignment name: ")
     difficulty = input("Enter difficulty on scale 1-10: ")
     status = input("Enter assignment status: ")
+    time_completion = input("Enter time required to complete: ")
+    entry_date = str(date.today())
     data = {}
     data['assignments'] = [] 
     if path.exists('data.json') == False:
@@ -19,10 +22,12 @@ def create_entry_json():
             ID = gen_ID()
             data['assignments'].append({
                 'ID': ID + 1,
+                'creation date': entry_date,
                 'class': class_title,
                 'assignment': assignment,
                 'difficulty': difficulty,
-                'status': status
+                'status': status,
+                'time to complete': time_completion
                 })
             json.dump(data, outfile)
         print("success!")
@@ -32,15 +37,17 @@ def create_entry_json():
             json_dict = json.load(outfile)
             json_dict['assignments'].append({
                 'ID': ID + 1,
+                'creation date': entry_date,
                 'class': class_title,
                 'assignment': assignment,
                 'difficulty': difficulty,
-                'status': status
+                'status': status,
+                'time to complete': time_completion
                 })
             outfile.seek(0) # reset the file pointer to position 0
             json.dump(json_dict, outfile, indent=4)
         print("success")
-    return outfile
+    return class_title, assignment, difficulty, status, time_completion, entry_date
 
 def gen_ID():
     file_size = os.path.getsize('data.json')
@@ -53,4 +60,6 @@ def gen_ID():
             ID = element['ID']        
     return ID
 
-create_entry_json()
+
+# class_name, assignment, diffic, stat, time_compl, entry_ = create_entry_json()
+# print(class_name, assignment, diffic, stat, time_compl, entry_)

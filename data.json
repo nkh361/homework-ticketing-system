@@ -2,17 +2,30 @@
     "assignments": [
         {
             "ID": 1,
+            "creation date": "2021-05-10",
             "class": "test",
             "assignment": "test",
-            "difficulty": "4",
-            "status": "open"
+            "difficulty": "test",
+            "status": "test",
+            "time to complete": "20"
         },
         {
             "ID": 2,
-            "class": "test",
-            "assignment": "test",
-            "difficulty": "3",
-            "status": "open"
+            "creation date": "2021-05-10",
+            "class": "cs",
+            "assignment": "project",
+            "difficulty": "20",
+            "status": "openm",
+            "time to complete": "1"
+        },
+        {
+            "ID": 3,
+            "creation date": "2021-05-10",
+            "class": "mcs",
+            "assignment": "exam",
+            "difficulty": "4",
+            "status": "open",
+            "time to complete": "60"
         }
     ]
 }
