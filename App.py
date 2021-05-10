@@ -9,6 +9,9 @@ def check_for_db():
         print("poo")
 
 def create_entry():
+    """
+    creates entries for both JSON and SQL table 'assignments'
+    """
     json_file.create_entry_json()
     database.create_entry_sql()
 
@@ -22,6 +25,9 @@ def index():
 
 @app.route('/', methods = ['POST'])
 def display():
+    """
+    returns SQL query to client
+    """
     return render_template('index.html', data = database.display_all_assignments())
 
 def main():

@@ -3,14 +3,10 @@ import pandas as pd
 from datetime import date
 from os import path
 
-"""
-Shit notes:
-    SQL and Queries work
-    SQL table 'assignments' work
-"""
-
 def create_entry_json():
-    # temp prototyping to make sure creating entries works
+    """
+    Creates / appends JSON object 'assignments'
+    """
     class_title = input("Enter a class: ")
     assignment = input("Enter assignment name: ")
     difficulty = input("Enter difficulty on scale 1-10: ")
@@ -52,6 +48,9 @@ def create_entry_json():
     return class_title, assignment, difficulty, status, time_completion, entry_date
 
 def gen_ID():
+    """
+    creates ID number for JSON entries
+    """
     file_size = os.path.getsize('data.json')
     if file_size <= 2:
         ID = 0
