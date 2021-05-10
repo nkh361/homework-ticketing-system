@@ -35,6 +35,15 @@
             "difficulty": "4",
             "status": "open",
             "time to complete": "20"
+        },
+        {
+            "ID": 5,
+            "creation date": "2021-05-10",
+            "class": "arch 200",
+            "assignment": "paper",
+            "difficulty": "5",
+            "status": "closed",
+            "time to complete": "30"
         }
     ]
 }

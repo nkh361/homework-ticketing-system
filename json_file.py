@@ -1,6 +1,5 @@
 import sqlite3, json, database, os
 import pandas as pd
-from flask import Flask, request
 from datetime import date
 from os import path
 
@@ -63,13 +62,3 @@ def gen_ID():
             ID = element['ID']        
     return ID
 
-
-# class_name, assignment, diffic, stat, time_compl, entry_ = create_entry_json()
-# print(class_name, assignment, diffic, stat, time_compl, entry_)
-# flatten the json data
-create_entry_json()
-with open('data.json', 'r') as f:
-    data = json.loads(f.read())
-
-df_nested_json = pd.json_normalize(data, record_path=['assignments'])
-print(df_nested_json)

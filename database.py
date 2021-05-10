@@ -10,15 +10,11 @@ def create_entry_sql():
     df_assignments = pd.json_normalize(data, record_path=['assignments'])
     # sql stuff starts here
     conn = sqlite3.connect(sql_file)
-    df_assignments.to_sql('assignments', conn)
-
-# create_entry_sql()
+    df_assignments.to_sql('assignments', conn, if_exists='replace')
 
 def display_all_assignments():
     conn = sqlite3.connect(sql_file)
     cur = conn.cursor()
     sql_statement = "SELECT * FROM assignments"
     query = cur.execute(sql_statement)
-    for entry in query:
-        print(entry)
-display_all_assignments()
+    return query.fetchall()
