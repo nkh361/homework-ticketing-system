@@ -5,7 +5,9 @@ from datetime import date
 from os import path
 
 """
-fix ID, json dump
+Shit notes:
+    SQL and Queries work
+    SQL table 'assignments' work
 """
 
 def create_entry_json():
