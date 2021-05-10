@@ -6,16 +6,14 @@ from os import path
 fix ID, json dump
 """
 
-def create_entry():
+def create_entry_json():
     # temp prototyping to make sure creating entries works
     class_title = input("Enter a class: ")
     assignment = input("Enter assignment name: ")
     difficulty = input("Enter difficulty on scale 1-10: ")
     status = input("Enter assignment status: ")
     data = {}
-    data['assignments'] = [{}]
-   
-    print("success!")
+    data['assignments'] = [] 
     if path.exists('data.json') == False:
         with open('data.json', 'w') as outfile: 
             ID = gen_ID()
@@ -26,7 +24,7 @@ def create_entry():
                 'difficulty': difficulty,
                 'status': status
                 })
-            json.dumps(data, outfile)
+            json.dump(data, outfile)
         print("success!")
     else:
         with open('data.json', 'a') as outfile:
@@ -38,7 +36,7 @@ def create_entry():
                 'difficulty': difficulty,
                 'status': status
                 })
-            json.dumps(data, outfile)
+            json.dump(data, outfile)
         print("success")
     return outfile
 
@@ -50,8 +48,7 @@ def gen_ID():
         f = open('data.json')
         json_file = json.load(f)
         for element in json_file['assignments']:
-            ID = element['ID']
-        
+            ID = element['ID']        
     return ID
 
-create_entry()
+create_entry_json()
