@@ -28,7 +28,11 @@ def display():
     """
     returns SQL query to client
     """
-    return render_template('index.html', data = database.display_all_assignments())
+    data_db = database.show_assignments()
+    data_str = str()
+    for entry in data_db:
+        data_str += entry[0] + ' | '
+    return render_template('index.html', data = data_str)
 
 def main():
     # create_entry()

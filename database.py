@@ -24,3 +24,14 @@ def display_all_assignments():
     sql_statement = "SELECT * FROM assignments"
     query = cur.execute(sql_statement)
     return query.fetchall()
+
+def show_assignments():
+    """
+    Select all assignments query
+    """
+    conn = sqlite3.connect(sql_file)
+    cur = conn.cursor()
+    sql_statement = "SELECT assignment FROM assignments"
+    query = cur.execute(sql_statement)
+    return query.fetchall()
+
