@@ -28,10 +28,14 @@ def display():
     """
     returns SQL query to client
     """
-    data_db = database.show_assignments()
+    data_db = database.display_all_assignments()
     data_str = str()
-    for entry in data_db:
-        data_str += entry[0] + ' | '
+    for i in range(len(data_db)):
+        for entry in data_db:
+            data_str += str(entry[i]) + ' , '
+        if i == 7:
+            data_str += '\n'
+            i = 0
     return render_template('index.html', data = data_str)
 
 def main():
