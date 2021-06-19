@@ -46,7 +46,7 @@ class json_object:
         
     def gen_ID(self):
         if (path.exists('data.json') == False) or (os.path.getsize('data.json')<=2):
-            return 0
+            return 0 # json file DNE or empty json file
         else:
             f = open('data.json')
             json_file = json.load(f)
