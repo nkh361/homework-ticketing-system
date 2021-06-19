@@ -1,1 +1,16 @@
-{"assignments": [{"ID": 1, "Assignment": "mcs project", "Due Date": "1289=129", "Priority": "top"}]}
+{
+    "assignments": [
+        {
+            "ID": 1,
+            "Assignment": "interview prep",
+            "Due Date": "06-29",
+            "Priority": "top"
+        },
+        {
+            "ID": 2,
+            "Assignment": "test",
+            "Due Date": "12-34-56",
+            "Priority": "low"
+        }
+    ]
+}

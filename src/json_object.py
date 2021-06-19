@@ -27,13 +27,32 @@ class json_object:
                     'Priority': self.priority
                     })
                 outfile.seek(0) # reset the file pointer to index 0
-                json.dump(data, outfile)
+                json.dump(data, outfile, indent=4)
             print("success!")
         else:
-            pass
+            with open('data.json', 'r+') as outfile:
+                ID = self.gen_ID()
+                json_dict = json.load(outfile)
+                json_dict['assignments'].append({
+                    'ID': ID + 1,
+                    'Assignment': self.assignment,
+                    'Due Date': self.due_date,
+                    'Priority': self.priority
+                })
+                outfile.seek(0)
+                json.dump(json_dict, outfile, indent=4)
+                print("success!")
+
         
     def gen_ID(self):
-        return 0
+        if (path.exists('data.json') == False) or (os.path.getsize('data.json')<=2):
+            return 0
+        else:
+            f = open('data.json')
+            json_file = json.load(f)
+            for element in json_file['assignments']:
+                ID = element['ID']
+            return ID
 
 def main():
     j_object = json_object("homework", "3-1-2", 1)
