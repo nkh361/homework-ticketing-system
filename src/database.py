@@ -43,17 +43,18 @@ class SQL_entry():
             conn.commit()
         print(self.read_entry())
     
-    def delete_entry(self, ID):
-        """
+    def delete_entry(self):
         conn = sqlite3.connect(sql_file)
         cur = conn.cursor()
-        delete = input("What would you like to delete")
-        """
-        pass
-
+        delete_ID = input("What would you like to deletei (enter ID): ")
+        sql_delete_ID = 'DELETE FROM assignments WHERE ID = {}'.format(str(delete_ID))
+        query = cur.execute(sql_delete_ID)
+        conn.commit()
+        print(self.read_entry())
+       
 
 def main():
     a = SQL_entry()
-    a.update_entry(2)
+    a.delete_entry()
 
 main()
