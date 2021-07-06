@@ -7,4 +7,9 @@ class Server:
     def __init__(self):
         self.test = "Hello, world!"
 
-from flask import
+    def test(self):
+        SQL_entry.update_entry()
+
+def main():
+    Server.test()
+main()
