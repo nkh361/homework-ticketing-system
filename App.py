@@ -5,11 +5,12 @@ from flask import Flask, request, render_template
 
 class Server:
     def __init__(self):
-        self.test = "Hello, world!"
+        self.test_ = "Hello, world!"
 
     def test(self):
         SQL_entry.update_entry()
 
 def main():
-    Server.test()
+    a = Server()
+    print(a.test_)
 main()

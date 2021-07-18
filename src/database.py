@@ -53,8 +53,3 @@ class SQL_entry():
         print(self.read_entry())
        
 
-def main():
-    a = SQL_entry()
-    a.delete_entry()
-
-main()

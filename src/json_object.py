@@ -54,11 +54,3 @@ class json_object:
                 ID = element['ID']
             return ID
 
-def main():
-    j_object = json_object("homework", "3-1-2", 1)
-    # a = j_object.show_object()
-    # print(a)
-    j_object.send_to_json()
-
-main()
-
