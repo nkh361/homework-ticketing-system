@@ -3,14 +3,20 @@ from src.database import SQL_entry
 from os import path
 from flask import Flask, request, render_template
 
+json_data = "src/data.json"
+
 class Server:
     def __init__(self):
         self.test_ = "Hello, world!"
 
-    def test(self):
-        SQL_entry.update_entry()
+app = Flask(__name__)
+
+@app.route("/")
+def root_page():
+    return render_template('index.html')
 
 def main():
-    a = Server()
-    print(a.test_)
+    # app.config['TEMPLATES_AUTO_RELOAD'] = True
+    # app.run(debug = True, use_reloader = False)
+
 main()
