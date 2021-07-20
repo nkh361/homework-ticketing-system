@@ -3,6 +3,13 @@ from src.database import SQL_entry
 from os import path
 from flask import Flask, request, render_template
 
+"""
+tasks: 
+    fix calls to json_object.py
+    fix calls to database.py
+        - to text input from flask
+"""
+
 json_data = "src/data.json"
 
 class Server:
