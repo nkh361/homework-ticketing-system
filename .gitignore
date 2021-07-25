@@ -1,3 +1,5 @@
+# json stuff
 *.json
-*.db
 
+# db stuff
+*.db
