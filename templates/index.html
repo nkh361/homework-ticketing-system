@@ -3,13 +3,16 @@
   <header><title>Ticketing Sysytem</title></header>
   <body>
     <form method="POST">
-      <input type = "submit" value = "Generate">
+      <input name="assignment">
+      <input name="due_date">
+      <input name="priority">
+      <input type="submit">
     </form>
 <!--    <ul>
       {% for data in Data%}
       <li> {{ data }} </li>
       {% endfor %}
 </ul> -->
-    <p> {{ data }} </p>
+    <p> assignment, due date, priority </p>
   </body>
 </html>

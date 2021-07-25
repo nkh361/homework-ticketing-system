@@ -3,13 +3,13 @@ import pandas as pd
 from datetime import date
 from os import path
 
-# create json object
+# create json object with flask entry
 
 class json_object:
     def __init__(self, assignment, due_date, priority):
-        self.assignment = input("Enter an assignment name: ")
-        self.due_date = input("Enter the assignment due date: ")
-        self.priority = input("Enter the assignment priority: ")
+        self.assignment = assignment
+        self.due_date = due_date
+        self.priority = priority
 
     def show_object(self):
         return self.assignment, self.due_date, self.priority
