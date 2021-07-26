@@ -10,8 +10,6 @@ tasks:
         - to text input from flask
 """
 
-json_data = "src/data.json"
-
 class Server:
     def __init__(self):
         self.test_ = "Hello, world!"
