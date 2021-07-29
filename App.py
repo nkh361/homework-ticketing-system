@@ -1,7 +1,7 @@
 from src.json_object import json_object
 from src.database import SQL_entry
 from os import path
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 import json
 
 app = Flask(__name__)
@@ -24,19 +24,20 @@ def test_json():
 
     return "Entered Successfully!"
 
-"""
-TODO:
-    create SQL entry for assignments
-    fix show_data()
-        not showing json stuff
-    or
-        can query from database and display data from there
-"""
-
 @app.route('/all.html', methods = ['GET'])
 def show_data():
-    json_file = 'data.json'
-    return render_template('all.html', title="tickets", jsonfile=json.dumps(json_file))
+    # create entry with existing sql
+    SQL_stuff = SQL_entry()
+    SQL_stuff.create_entry()
+    query = SQL_stuff.read_entry()
+    return jsonify(query)
+
+"""
+TODO and notes:
+    finished makin this work, just need to make it look nice. and not like a json file :D
+    need to make a ticket sorting thing (like dropdown menu)
+    need to make a ticket search thing
+"""
 
 def main():
     app.config['TEMPLATES_AUTO_RELOAD'] = True
