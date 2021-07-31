@@ -1,0 +1,9 @@
+Add:
+  - Login system
+    - create users / verify users
+
+Fix:
+  - Optimise: send things straight to database...idk why i did it to json then to sql lolol.
+  - Appearance
+  - UX
+
