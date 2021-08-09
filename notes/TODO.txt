@@ -7,3 +7,5 @@ Fix:
   - Appearance
   - UX
 
+Delte:
+  - data.json
