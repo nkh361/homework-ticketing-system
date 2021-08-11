@@ -42,9 +42,8 @@ class User:
     def create_user_entry(self):
         conn = sqlite3.connect(relational_database)
         cur = conn.cursor()
-        sql = 'INSERT INTO Users (ID, username, password) VALUES (%d, %s, %s)'
-        val = (self.ID, self.username, self.password)
-        cur.execute(sql, val)
+        sql = "INSERT INTO Users (ID, username, password) VALUES (%d, %s, %s)" % (self.ID, self.username, self.password)
+        cur.execute(sql)
         conn.commit()
 
     def get_all_users(self):
@@ -102,8 +101,11 @@ def main():
     # app.config['TEMPLATES_AUTO_RELOAD'] = True
     # app.run(debug = True, use_reloader = False)
     user = User(ID = 3, username = 'test', password = 'test')
-    user.user_table_genisis()
-    user.create_table_for_users()
+    """
+    no such column: test
+    """
+    # user.user_table_genisis()
+    user.create_user_entry()
 
 main()
 
