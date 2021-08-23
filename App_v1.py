@@ -13,9 +13,6 @@ class User:
         self.username = username
         self.password = password
 
-    def __repr__(self):
-        return f'<User: {self.username}>'
-
     def user_table_count(self):
         conn = sqlite3.connect(relational_database)
         cur = conn.cursor()
@@ -43,12 +40,6 @@ class User:
         query = cur.execute('SELECT * FROM Users')
         for x in query.fetchall():
             print(x)
-
-# list of users
-
-users = []
-users.append(User(ID = 1, username = 'nathan', password = 'test'))
-users.append(User(ID = 2, username = 'nkh', password = 'nkh'))
 
 # send the list of users to database
 
@@ -93,9 +84,8 @@ def profile():
 def main():
     # app.config['TEMPLATES_AUTO_RELOAD'] = True
     # app.run(debug = True, use_reloader = False)
-    user = User(ID = 3, username = "nkh", password = "test")
-    user.create_table_for_users()
+    user = User(ID = 1, username = "nkh", password = "test")
     user.create_user_entry()
-
+    user.get_all_users()
 main()
 
