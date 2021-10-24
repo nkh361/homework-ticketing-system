@@ -38,8 +38,15 @@ class User:
         conn = sqlite3.connect(relational_database)
         cur = conn.cursor()
         query = cur.execute('SELECT * FROM Users')
-        for x in query.fetchall():
-            print(x)
+        return query.fetchone() # returns (3,), to use int 3 use query.fetchone()[0]
+
+"""
+TODO
+- join sql tables with json files for users
+- create page past login
+- use json_object.py to produce the ticket data per user
+-
+"""
 
 # send the list of users to database
 
@@ -86,6 +93,6 @@ def main():
     # app.run(debug = True, use_reloader = False)
     user = User(ID = 1, username = "nkh", password = "test")
     user.create_user_entry()
-    user.get_all_users()
+    print(user.get_all_users()[0] # stdout 3)
 main()
 
