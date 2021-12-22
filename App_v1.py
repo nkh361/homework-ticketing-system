@@ -1,98 +1,40 @@
 from flask import Flask, render_template, request, session, redirect, url_for, g, abort
 import sqlite3, json, os
 from os import path
+from dataclasses import dataclass
+from src.json_object import json_object
+
+@dataclass
+class User:
+    username: str
+    password: str
+    # str path to usr_data.json
+    # tickets: str
+
+@dataclass
+class User_Actions(User):
+    def create_ticket(ff_assignment, ff_due_date, ff_priority):
+        return json_object(ff_assignment, ff_due_date, ff_priority)
+
+def input_process(s):
+    return eval(s)
 
 app = Flask(__name__)
-app.secret_key = 'secret'
+@app.route('/')
+def start():
+    return render_template('index.html')
 
-relational_database = 'tickets.db'
-
-class User:
-    def __init__(self, ID, username, password):
-        self.ID = ID
-        self.username = username
-        self.password = password
-
-    def user_table_count(self):
-        conn = sqlite3.connect(relational_database)
-        cur = conn.cursor()
-        query = cur.execute('SELECT COUNT(*) FROM Users')
-        count = query.fetchone()[0]
-        return count
-    
-    def create_table_for_users(self):
-        conn = sqlite3.connect(relational_database)
-        cur = conn.cursor()
-        sql_statement = "CREATE TABLE Users ('ID' int, 'username' text, 'password' text)"
-        query = cur.execute(sql_statement)           
-        conn.commit()
-
-    def create_user_entry(self):
-        conn = sqlite3.connect(relational_database)
-        cur = conn.cursor()
-        sql = "INSERT INTO Users (ID, username, password) VALUES (:ID, :username, :password)"
-        cur.execute(sql, {"ID":self.ID, "username":self.username, "password":self.password})
-        conn.commit()
-
-    def get_all_users(self):
-        conn = sqlite3.connect(relational_database)
-        cur = conn.cursor()
-        query = cur.execute('SELECT * FROM Users')
-        return query.fetchone() # returns (3,), to use int 3 use query.fetchone()[0]
-
-"""
-TODO
-- join sql tables with json files for users
-- create page past login
-- use json_object.py to produce the ticket data per user
--
-"""
-
-# send the list of users to database
-
-@app.before_request
-def before_request():
-    if 'user_id' in session:
-        user = [x for x in users if x.ID == session['user_id']][0]
-        g.user = user
-    else:
-        g.user = None
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        session.pop('user_id', None)
-
-        username = request.form['username']
-        password = request.form['password']
-        
-        user = [x for x in users if x.username == username][0]
-        if user and user.password == password:
-            session['user_id'] = user.ID
-            return redirect(url_for('profile'))
-        
-        return redirect(url_for('login'))
-
-    return render_template('login.html')
-
-@app.route('/test', methods=['POST'])
-def test():
-    # left off here
-    tmp = User()
-    # tmp.
-
-@app.route('/profile')
-def profile():
-    if not g.user:
-        return redirect(url_for('login'))
-
-    return render_template('profile.html')
+@app.route('/', methods=['POST'])
+def post_processing():
+    assignment_input = input_process(request.form['assignment'])
+    due_date_input = input_process(request.form['due_date'])
+    priority_input = input_process(request.form['priority'])
+    Sample_user = User_Actions(username='nate', password='test')
+    Sample_ticket = Sample_user.create_ticket(assignment_input, due_date_input, priority_input)
+    Sample_ticket.send_to_json()
+    return render_template('index.html', status = "Works")
 
 def main():
-    # app.config['TEMPLATES_AUTO_RELOAD'] = True
-    # app.run(debug = True, use_reloader = False)
-    user = User(ID = 1, username = "nkh", password = "test")
-    user.create_user_entry()
-    print(user.get_all_users()[0] # stdout 3)
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.run(debug = True, use_reloader = True)
 main()
-

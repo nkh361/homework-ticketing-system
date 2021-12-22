@@ -2,14 +2,13 @@ import sqlite3, json, os
 import pandas as pd
 from datetime import date
 from os import path
+from dataclasses import dataclass
 
-# create json object with flask entry
-
+@dataclass
 class json_object:
-    def __init__(self, assignment, due_date, priority):
-        self.assignment = assignment
-        self.due_date = due_date
-        self.priority = priority
+    assignment: str
+    due_date: str
+    priority: str
 
     def show_object(self):
         return self.assignment, self.due_date, self.priority
@@ -28,7 +27,7 @@ class json_object:
                     })
                 outfile.seek(0) # reset the file pointer to index 0
                 json.dump(data, outfile, indent=4)
-            print("success!")
+
         else:
             with open('data.json', 'r+') as outfile:
                 ID = self.gen_ID()
@@ -53,4 +52,9 @@ class json_object:
             for element in json_file['assignments']:
                 ID = element['ID']
             return ID
+
+# def main():
+#     A = json_object("test123", "12-12-12", "top")
+#     A.send_to_json()
+# main()
 
