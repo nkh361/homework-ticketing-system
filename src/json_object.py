@@ -6,24 +6,28 @@ from dataclasses import dataclass
 
 @dataclass
 class json_object:
+    username: str
     assignment: str
+    start_date: str
     due_date: str
     priority: str
-
-    def show_object(self):
-        return self.assignment, self.due_date, self.priority
     
     def send_to_json(self):
+        weights = {"low": 1, "mid": 3, "high": 5, "Not assigned": 0}
         data = {}
         data['assignments'] = []
+        def get_weight():
+            return weights[self.priority]
         if path.exists('data.json') == False:
             with open('data.json', 'w') as outfile:
                 ID = self.gen_ID()
                 data['assignments'].append({
+                    'Username': self.username,
                     'ID': ID + 1,
                     'Assignment': self.assignment,
+                    'Start Date': self.start_date,
                     'Due Date': self.due_date,
-                    'Priority': self.priority
+                    'Priority': get_weight()
                     })
                 outfile.seek(0) # reset the file pointer to index 0
                 json.dump(data, outfile, indent=4)
@@ -33,10 +37,12 @@ class json_object:
                 ID = self.gen_ID()
                 json_dict = json.load(outfile)
                 json_dict['assignments'].append({
+                    'Username': self.username,
                     'ID': ID + 1,
                     'Assignment': self.assignment,
+                    'Start Date': self.start_date,
                     'Due Date': self.due_date,
-                    'Priority': self.priority
+                    'Priority': get_weight()
                 })
                 outfile.seek(0)
                 json.dump(json_dict, outfile, indent=4)
@@ -52,9 +58,4 @@ class json_object:
             for element in json_file['assignments']:
                 ID = element['ID']
             return ID
-
-# def main():
-#     A = json_object("test123", "12-12-12", "top")
-#     A.send_to_json()
-# main()
 
