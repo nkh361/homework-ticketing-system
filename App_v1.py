@@ -9,6 +9,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask_bcrypt import Bcrypt
+from flask_sqlalchemy_session import flask_scoped_session
+from sqlalchemy.dialects.postgresql import JSON
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
@@ -29,6 +31,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
+    # ticket_data = db.Column(JSON, nullable=True)
 
 class RegisterForm(FlaskForm):
     username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
@@ -49,21 +52,34 @@ class LoginForm(FlaskForm):
 def input_process(s):
     return eval(s)
 
-@app.route('/')
+@app.route('/ticket-dash')
 def start():
     return render_template('index.html')
 
-@app.route('/', methods=['POST'])
+@app.route('/ticket-dash', methods=['POST'])
+@login_required
 def post_processing():
-    # testing username
-    username_input ="nathan"
-    assignment_input = request.form['assignment']
-    start_input = request.form['start_date']
-    due_date_input = request.form['due_date']
-    priority_input = str(request.form.get('priority'))
-    ticket = json_object(username_input, assignment_input, start_input, due_date_input, priority_input)
-    ticket.send_to_json()
-    return render_template('index.html', status = "Works")
+    json_query = {
+            "assignments": [
+                {
+                    "Ticket ID": gen_ID(),
+                    "Assignment": form.assignment,
+                    "Start Date": form.start_date,
+                    "End Date": form.end_date,
+                    "Priority": form.priority,
+                }
+            ]
+    }
+    user = current_user.name
+    a = db.session.query(current_user)
+    a = a.filter(current_user.name == current_user.name)
+    record = a.one()
+    record.ticket_data = json_query
+    db.session.commit()
+    # TODO: finish this function garbage, restart database table to allow json column
+    # IDEA: utilize a form for each input, but if input is blank then default NULL
+    # use request.form.to_dict(flat = False) to get a dictionary with lists of values
+    return json_query
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -76,13 +92,14 @@ def login():
             if bcrypt.check_password_hash(user.password, form.password.data):
                 login_user(user)
                 return redirect(url_for('dashboard'))
-
+    print("Current: ", current_user)
     return render_template('login.html', form=form)
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
     return render_template('dashboard.html')
+    # TODO: redirect yarn server, yarn server pull JSON from flask
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

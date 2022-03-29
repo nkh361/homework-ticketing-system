@@ -24,6 +24,7 @@ class json_object:
             if path.exists('data.json') == False:
                 with open('data.json', 'w') as outfile:
                     ID = self.gen_ID()
+                    # possibly use uuid, just send to file and check if its in
                     data['assignments'].append({
                         'Username': self.username,
                         'ID': ID + 1,
