@@ -56,6 +56,18 @@ def input_process(s):
 def start():
     return render_template('index.html')
 
+def weighted_scheduling(tasks):
+    # 7th lecture
+    """
+    Optimal: schedule where jobs are ordered according to non-decreasing processing times
+
+    Analyzing cost difference: the cost goes down if this difference is greater than 0
+            - if processing time of job i > processing time of job j
+            - schedule where jobs are ordered according to non-decreasing ratio p_i / w_i is
+              optimal
+    """
+    pass
+
 @app.route('/ticket-dash', methods=['POST'])
 @login_required
 def post_processing():
@@ -79,6 +91,7 @@ def post_processing():
     # TODO: finish this function garbage, restart database table to allow json column
     # IDEA: utilize a form for each input, but if input is blank then default NULL
     # use request.form.to_dict(flat = False) to get a dictionary with lists of values
+    # TODO: set weights to start date - end date * priority score
     return json_query
 
 @app.route('/login', methods=['GET', 'POST'])
