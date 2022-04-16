@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for, g, abort
-import sqlite3, json, os
+import sqlite3, json, os, datetime
 from os import path
 from src.json_object import json_object
 import pandas as pd
@@ -56,7 +56,7 @@ def input_process(s):
 def start():
     return render_template('index.html')
 
-def weighted_scheduling(tasks):
+def weighted_scheduling():
     # 7th lecture
     """
     Optimal: schedule where jobs are ordered according to non-decreasing processing times
@@ -66,8 +66,22 @@ def weighted_scheduling(tasks):
             - schedule where jobs are ordered according to non-decreasing ratio p_i / w_i is
               optimal
     """
-    pass
+    file = open('data.json')
+    data = json.load(file)
+    file.close()
+    columns = ["Username", "ID", "Assignment", "Start Date", "Due Date", "Priority"]
+    # df = pd.DataFrame(data["assignments"], columns=columns)
+    # table = df.to_html(index=False)
+    polished_data = dict()
+    for i in data["assignments"]:
+        # print(i["Priority"])
+        polished_data.update({i["Assignment"]: i["Priority"]})
+    print(polished_data)
+    # TODO: make integer value of processing time, sort the dictionary by p_i / w_i
+weighted_scheduling()
 
+
+# TODO: FIX THIS
 @app.route('/ticket-dash', methods=['POST'])
 @login_required
 def post_processing():
