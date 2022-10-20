@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html>
   <header><title>Ticketing Sysytem</title>
-    <a href = "all.html">Show all tickets</a>
+    <a href = "ticket_view.html">Show all tickets</a>
   </header>
   <body>
     <form method="POST">
       <input name="assignment">
+      <input name="start_date">
       <input name="due_date">
-      <input name="priority">
+      <select name="priority" id="priority">
+        <option value="low">Low</option>
+        <option value="mid">Medium</option>
+        <option value="high">High</option>
       <input type="submit">
     </form>
-    <p> assignment, due date, priority </p>
+    <p> Assignment, Start Date, Due Date, Priority </p>
+    <p> Status: {{status}} </p>
   </body>
 </html>

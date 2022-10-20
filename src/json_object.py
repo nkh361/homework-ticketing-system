@@ -2,46 +2,57 @@ import sqlite3, json, os
 import pandas as pd
 from datetime import date
 from os import path
+from dataclasses import dataclass
 
-# create json object with flask entry
-
+@dataclass
 class json_object:
-    def __init__(self, assignment, due_date, priority):
-        self.assignment = assignment
-        self.due_date = due_date
-        self.priority = priority
-
-    def show_object(self):
-        return self.assignment, self.due_date, self.priority
+    username: str
+    assignment: str
+    start_date: str
+    due_date: str
+    priority: str
     
     def send_to_json(self):
+        weights = {"low": 1, "mid": 3, "high": 5, "Not assigned": 0}
         data = {}
         data['assignments'] = []
-        if path.exists('data.json') == False:
-            with open('data.json', 'w') as outfile:
-                ID = self.gen_ID()
-                data['assignments'].append({
-                    'ID': ID + 1,
-                    'Assignment': self.assignment,
-                    'Due Date': self.due_date,
-                    'Priority': self.priority
+
+        def get_weight():
+            return weights[self.priority]
+
+        try:
+            if path.exists('data.json') == False:
+                with open('data.json', 'w') as outfile:
+                    ID = self.gen_ID()
+                    # possibly use uuid, just send to file and check if its in
+                    data['assignments'].append({
+                        'Username': self.username,
+                        'ID': ID + 1,
+                        'Assignment': self.assignment,
+                        'Start Date': self.start_date,
+                        'Due Date': self.due_date,
+                        'Priority': get_weight()
+                        })
+                    outfile.seek(0) # reset the file pointer to index 0
+                    json.dump(data, outfile, indent=4)
+
+            else:
+                with open('data.json', 'r+') as outfile:
+                    ID = self.gen_ID()
+                    json_dict = json.load(outfile)
+                    json_dict['assignments'].append({
+                        'Username': self.username,
+                        'ID': ID + 1,
+                        'Assignment': self.assignment,
+                        'Start Date': self.start_date,
+                        'Due Date': self.due_date,
+                        'Priority': get_weight()
                     })
-                outfile.seek(0) # reset the file pointer to index 0
-                json.dump(data, outfile, indent=4)
-            print("success!")
-        else:
-            with open('data.json', 'r+') as outfile:
-                ID = self.gen_ID()
-                json_dict = json.load(outfile)
-                json_dict['assignments'].append({
-                    'ID': ID + 1,
-                    'Assignment': self.assignment,
-                    'Due Date': self.due_date,
-                    'Priority': self.priority
-                })
-                outfile.seek(0)
-                json.dump(json_dict, outfile, indent=4)
-                print("success!")
+                    outfile.seek(0)
+                    json.dump(json_dict, outfile, indent=4)
+                    print("success!")
+        except:
+            print("json push error")
 
         
     def gen_ID(self):
