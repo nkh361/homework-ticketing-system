@@ -7,12 +7,10 @@
   </head>
   <body>
     <h1>Register Page</h1>
-    <form method="POST" action="">
-      {{ form.hidden_tag() }}
-      {{ form.username }}
-      {{ form.password }}
-      {{ form.submit }}
+      <form method="POST" action="">
+        <input type="text" name="username" id="username" placeholder="Username">
+        <input type="password" name="password" id="password" placeholder="Password">
+        <input type="submit" name="Submit">
     </form>
-    <a href="{{url_for('login')}}">Already have an account? Log in here.</a>
   </body>
 </html>

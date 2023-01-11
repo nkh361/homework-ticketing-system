@@ -1,107 +1,119 @@
-from src.json_object import json_object
-from os import path
-from flask import Flask, request, render_template, jsonify, redirect, url_for, g, abort
-import json, sqlite3, os, datetime
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import InputRequired, Length, ValidationError
-from flask_bcrypt import Bcrypt
-from flask_sqlalchemy_session import flask_scoped_session
-from sqlalchemy.dialects.postgresql import JSON
+from src.user import User
+from src.ticket import Ticket
+import mysql.connector, os, datetime
+from flask import Flask, request, render_template, jsonify, redirect, url_for, g, abort, session
 
 app = Flask(__name__)
-db = SQLAlchemy(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-app.config['SECRET_KEY'] = 'test'
-bcrypt = Bcrypt(app)
+app.secret_key = os.environ['APP_SECRET_KEY']
 
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = "login"
+try:
+    mysql_connector = mysql.connector.connect(
+        host='127.0.0.1',
+        user='root',
+        database='ticketing'
+    )
+    print("Database connection: ", mysql_connector.is_connected())
+except:
+    print("MySQL connection failed.")
 
-@login_manager.user_loader
-# reload the user object from the user ID stored in the session
-def load_user(user_id):
-    return User.query.get(int(user_id))
+mysql_cursor = mysql_connector.cursor()
 
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), nullable=False, unique=True)
-    password = db.Column(db.String(80), nullable=False)
-    # ticket_data = db.Column(JSON, nullable=True)
+def validate_user(current_user: User):
+    hash_check = current_user.hash_password()
+    query = ("SELECT username FROM users WHERE username=%s AND password=%s;")
+    mysql_cursor.execute(query, (current_user.username, hash_check))
+    mysql_cursor.commit()
+    result = mysql_cursor.fetchone()
+    if result is None:
+        return False
+    else:
+        return True
 
-class RegisterForm(FlaskForm):
-    username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
-    password = PasswordField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Password"})
-    submit = SubmitField("Register")
+def add_user(new_user: User):
+    username = new_user.username
+    hashed_password = new_user.hash_password()
+    user_id = new_user.user_id
+    mysql_cursor.execute(
+        "INSERT INTO users (username, password, user_id) VALUES (%s, %s, %s);", (username, hashed_password, user_id)
+    )
+    mysql_connector.commit()
+    print("added")
 
-    def validate_username(self, username):
-        existing_user_username = User.query.filter_by(username=username.data).first()
+def get_user_id(username):
+    query = "SELECT user_id FROM users WHERE username='%s'"
+    mysql_cursor.execute(query, username)
+    result = mysql_cursor.fetchall()
+    return result # TODO: not returning any results
 
-        if existing_user_username:
-            raise ValidationError("The username is taken.")
+def cache_info(cookie: str, data: any) -> None:
+    session[cookie] = data
 
-class LoginForm(FlaskForm):
-    username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
-    password = PasswordField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Password"})
-    submit = SubmitField("Login")
+@app.route('/')
+def landing():
+    if 'username' in session:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/register', methods=["POST", "GET"])
+def register():
+    if request.method == "POST":
+        new_username = request.form['username']
+        new_password = request.form['password']
+        new_user = User(
+            username=new_username,
+            password=new_password
+        )
+        add_user(new_user)
+        cache_info("username", new_user.username)
+        cache_info("user_id", new_user.user_id)
+        return redirect(url_for('dashboard'))
+    else:
+        return render_template("register.html")
+
+@app.route("/login", methods=["POST", "GET"])
 def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user:
-            if bcrypt.check_password_hash(user.password, form.password.data):
-                login_user(user)
-                return redirect(url_for('dashboard'))
-    print("Current: ", current_user)
-    return render_template('login.html', form=form)
+    if request.method == "POST":
+        current_username = request.form['username']
+        current_password = request.form['password']
+        if validate_user(User(username=current_username, password=current_password)):
+            # session['username'] = current_username
+            cache_info("username", current_username)
+            return redirect(url_for('dashboard'))
+        else:
+            error = "invalid username or password"
+            return render_template("login.html", error=error)
+    return render_template("login.html")
 
-@app.route('/dashboard', methods=['GET', 'POST'])
-@login_required
+@app.route("/dashboard", methods=["POST", "GET"])
 def dashboard():
-    return render_template('dashboard.html')
+    if 'username' in session:
+        if request.method == "POST":
+            today = datetime.datetime.today()
+            new_ticket = Ticket(
+                user_id="1673304387-554",
+                assignment=request.form['ticket_name'],
+                created_date=today.strftime('%Y-%m-%d'),
+                due_date=request.form['due_date'],
+                priority=request.form['priority'],
+                status=request.form['status']
+            )
+            mysql_cursor.execute(
+                "INSERT INTO tickets (user_id, title, priority, created_at, due_date, status) VALUES (%s,%s,%s,%s,%s, %s);",
+                (new_ticket.user_id, new_ticket.assignment, new_ticket.priority, new_ticket.created_date, new_ticket.due_date, new_ticket.status),
+            )
+            mysql_connector.commit()
+            return render_template("dashboard.html", username=session['username'], status_message="Success!")
+        return render_template("dashboard.html", username=session['username'])
+    else:
+        return redirect(url_for('login'))
 
-@app.route("/")
-def root_page():
-    return render_template('login.html')
-
-@app.route('/', methods = ['POST'])
-def test_json():
-    """
-    HTML input name will be 'assignment', 'due_date', and 'priority'
-    """
-    assignment = request.form['assignment']
-    due_date = request.form['due_date']
-    priority = request.form['priority']
-    
-    json = json_object(assignment, due_date, priority)
-    json.send_to_json()
-
-    return "Entered Successfully!"
-
-
-
-@app.route('/all.html', methods = ['GET'])
-def show_data():
-    # create entry with existing sql
-    SQL_stuff = SQL_entry()
-    SQL_stuff.create_entry()
-    query = SQL_stuff.read_entry()
-    return jsonify(query)
-
-"""
-TODO and notes:
-    finished makin this work, just need to make it look nice. and not like a json file :D
-    need to make a ticket sorting thing (like dropdown menu)
-    need to make a ticket search thing
-"""
+# @app.route("/ticket_view", methods=["POST", "GET"])
+# def ticket_view():
+#     # REMINDER: set post method in ticket_view.html
+#     return render_template('ticket_view.html')
+#     # <p><input type=text name=ticket_name placeholder="Title"></p>
 
 def main():
     app.config['TEMPLATES_AUTO_RELOAD'] = True
-    app.run(debug = True, use_reloader = False)
-
+    app.run(debug = True, use_reloader = True)
 main()
