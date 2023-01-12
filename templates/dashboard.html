@@ -7,6 +7,7 @@
   </head>
   <body>
     <h1>Welcome, {{ username }}</h1>
+    <a href="{{url_for('logout')}}">Log out.</a>
     <form method="POST" action="">
       <p><input type=text name=ticket_name placeholder="Title"></p>
       <p><input type="datetime" name=due_date placeholder="Due date YYYY-MM-DD"></p>

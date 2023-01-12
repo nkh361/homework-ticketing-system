@@ -16,20 +16,22 @@ try:
 except:
     print("MySQL connection failed.")
 
-mysql_cursor = mysql_connector.cursor()
+# mysql_cursor = mysql_connector.cursor()
 
-def validate_user(current_user: User):
+def validate_user(current_user: User) -> bool:
+    mysql_cursor = mysql_connector.cursor()
     hash_check = current_user.hash_password()
     query = ("SELECT username FROM users WHERE username=%s AND password=%s;")
     mysql_cursor.execute(query, (current_user.username, hash_check))
-    mysql_cursor.commit()
     result = mysql_cursor.fetchone()
+    mysql_cursor.close()
     if result is None:
         return False
     else:
         return True
 
-def add_user(new_user: User):
+def add_user(new_user: User) -> None:
+    mysql_cursor = mysql_connector.cursor()
     username = new_user.username
     hashed_password = new_user.hash_password()
     user_id = new_user.user_id
@@ -37,25 +39,30 @@ def add_user(new_user: User):
         "INSERT INTO users (username, password, user_id) VALUES (%s, %s, %s);", (username, hashed_password, user_id)
     )
     mysql_connector.commit()
+    mysql_cursor.close()
     print("added")
 
-def get_user_id(username):
-    query = "SELECT user_id FROM users WHERE username='%s'"
-    mysql_cursor.execute(query, username)
+def get_user_id(username: str) -> None:
+    mysql_cursor = mysql_connector.cursor()
+    query = "SELECT user_id FROM users WHERE username='{}'".format(username)
+    mysql_cursor.execute(query)
     result = mysql_cursor.fetchall()
-    return result # TODO: not returning any results
+    mysql_connector.commit()
+    mysql_cursor.close()
+    return result[0][0] # result -> [('data_here',)] format. result[0][0] is data_here
 
 def cache_info(cookie: str, data: any) -> None:
     session[cookie] = data
 
 @app.route('/')
-def landing():
+def landing() -> render_template:
     if 'username' in session:
         return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
+    else:
+        return redirect(url_for('login'))
 
 @app.route('/register', methods=["POST", "GET"])
-def register():
+def register() -> render_template:
     if request.method == "POST":
         new_username = request.form['username']
         new_password = request.form['password']
@@ -71,7 +78,7 @@ def register():
         return render_template("register.html")
 
 @app.route("/login", methods=["POST", "GET"])
-def login():
+def login() -> render_template:
     if request.method == "POST":
         current_username = request.form['username']
         current_password = request.form['password']
@@ -84,13 +91,20 @@ def login():
             return render_template("login.html", error=error)
     return render_template("login.html")
 
+@app.route("/logout", methods=["POST", "GET"])
+def logout() -> render_template:
+    session.clear()
+    return render_template("logout.html")
+
 @app.route("/dashboard", methods=["POST", "GET"])
-def dashboard():
+def dashboard() -> render_template:
+    mysql_cursor = mysql_connector.cursor()
     if 'username' in session:
         if request.method == "POST":
             today = datetime.datetime.today()
+            user_id = get_user_id(session['username'])
             new_ticket = Ticket(
-                user_id="1673304387-554",
+                user_id=user_id,
                 assignment=request.form['ticket_name'],
                 created_date=today.strftime('%Y-%m-%d'),
                 due_date=request.form['due_date'],
@@ -103,6 +117,7 @@ def dashboard():
             )
             mysql_connector.commit()
             return render_template("dashboard.html", username=session['username'], status_message="Success!")
+        mysql_cursor.close()
         return render_template("dashboard.html", username=session['username'])
     else:
         return redirect(url_for('login'))
