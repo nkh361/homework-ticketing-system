@@ -1,7 +1,7 @@
 from src.user import User
 from src.ticket import Ticket
 import mysql.connector, os, datetime
-from flask import Flask, request, render_template, jsonify, redirect, url_for, g, abort, session
+from flask import Flask, request, render_template, redirect, url_for, session
 
 app = Flask(__name__)
 app.secret_key = os.environ['APP_SECRET_KEY']
@@ -15,8 +15,6 @@ try:
     print("Database connection: ", mysql_connector.is_connected())
 except:
     print("MySQL connection failed.")
-
-# mysql_cursor = mysql_connector.cursor()
 
 def validate_user(current_user: User) -> bool:
     mysql_cursor = mysql_connector.cursor()
@@ -83,7 +81,6 @@ def login() -> render_template:
         current_username = request.form['username']
         current_password = request.form['password']
         if validate_user(User(username=current_username, password=current_password)):
-            # session['username'] = current_username
             cache_info("username", current_username)
             return redirect(url_for('dashboard'))
         else:
@@ -122,11 +119,23 @@ def dashboard() -> render_template:
     else:
         return redirect(url_for('login'))
 
-# @app.route("/ticket_view", methods=["POST", "GET"])
-# def ticket_view():
-#     # REMINDER: set post method in ticket_view.html
-#     return render_template('ticket_view.html')
-#     # <p><input type=text name=ticket_name placeholder="Title"></p>
+@app.route("/ticket_view", methods=["POST", "GET"])
+def ticket_view() -> render_template:
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    mysql_cursor = mysql_connector.cursor()
+    query = (
+        "SELECT title, priority, created_at, due_date, status FROM tickets WHERE user_id='{}'".format(get_user_id(session['username']))
+    )
+    mysql_cursor.execute(query)
+    result = mysql_cursor.fetchall()
+    mysql_connector.commit()
+    mysql_cursor.close()
+    return render_template("ticket_view.html", results=result)
+
+# @app.route("/sorted_tickets", methods=["POST", "GET"])
+# def sorted_tickets():
+#     return
 
 def main():
     app.config['TEMPLATES_AUTO_RELOAD'] = True
