@@ -1,46 +1,134 @@
-from src.json_object import json_object
-from src.database import SQL_entry
-from os import path
-from flask import Flask, request, render_template, jsonify
-import json
+from src.user import User
+from src.ticket import Ticket
+import mysql.connector, os, datetime
+from flask import Flask, request, render_template, jsonify, redirect, url_for, g, abort, session
 
 app = Flask(__name__)
+app.secret_key = os.environ['APP_SECRET_KEY']
 
-@app.route("/")
-def root_page():
-    return render_template('index.html')
+try:
+    mysql_connector = mysql.connector.connect(
+        host='127.0.0.1',
+        user='root',
+        database='ticketing'
+    )
+    print("Database connection: ", mysql_connector.is_connected())
+except:
+    print("MySQL connection failed.")
 
-@app.route('/', methods = ['POST'])
-def test_json():
-    """
-    HTML input name will be 'assignment', 'due_date', and 'priority'
-    """
-    assignment = request.form['assignment']
-    due_date = request.form['due_date']
-    priority = request.form['priority']
-    
-    json = json_object(assignment, due_date, priority)
-    json.send_to_json()
+# mysql_cursor = mysql_connector.cursor()
 
-    return "Entered Successfully!"
+def validate_user(current_user: User) -> bool:
+    mysql_cursor = mysql_connector.cursor()
+    hash_check = current_user.hash_password()
+    query = ("SELECT username FROM users WHERE username=%s AND password=%s;")
+    mysql_cursor.execute(query, (current_user.username, hash_check))
+    result = mysql_cursor.fetchone()
+    mysql_cursor.close()
+    if result is None:
+        return False
+    else:
+        return True
 
-@app.route('/all.html', methods = ['GET'])
-def show_data():
-    # create entry with existing sql
-    SQL_stuff = SQL_entry()
-    SQL_stuff.create_entry()
-    query = SQL_stuff.read_entry()
-    return jsonify(query)
+def add_user(new_user: User) -> None:
+    mysql_cursor = mysql_connector.cursor()
+    username = new_user.username
+    hashed_password = new_user.hash_password()
+    user_id = new_user.user_id
+    mysql_cursor.execute(
+        "INSERT INTO users (username, password, user_id) VALUES (%s, %s, %s);", (username, hashed_password, user_id)
+    )
+    mysql_connector.commit()
+    mysql_cursor.close()
+    print("added")
 
-"""
-TODO and notes:
-    finished makin this work, just need to make it look nice. and not like a json file :D
-    need to make a ticket sorting thing (like dropdown menu)
-    need to make a ticket search thing
-"""
+def get_user_id(username: str) -> None:
+    mysql_cursor = mysql_connector.cursor()
+    query = "SELECT user_id FROM users WHERE username='{}'".format(username)
+    mysql_cursor.execute(query)
+    result = mysql_cursor.fetchall()
+    mysql_connector.commit()
+    mysql_cursor.close()
+    return result[0][0] # result -> [('data_here',)] format. result[0][0] is data_here
+
+def cache_info(cookie: str, data: any) -> None:
+    session[cookie] = data
+
+@app.route('/')
+def landing() -> render_template:
+    if 'username' in session:
+        return redirect(url_for('dashboard'))
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/register', methods=["POST", "GET"])
+def register() -> render_template:
+    if request.method == "POST":
+        new_username = request.form['username']
+        new_password = request.form['password']
+        new_user = User(
+            username=new_username,
+            password=new_password
+        )
+        add_user(new_user)
+        cache_info("username", new_user.username)
+        cache_info("user_id", new_user.user_id)
+        return redirect(url_for('dashboard'))
+    else:
+        return render_template("register.html")
+
+@app.route("/login", methods=["POST", "GET"])
+def login() -> render_template:
+    if request.method == "POST":
+        current_username = request.form['username']
+        current_password = request.form['password']
+        if validate_user(User(username=current_username, password=current_password)):
+            # session['username'] = current_username
+            cache_info("username", current_username)
+            return redirect(url_for('dashboard'))
+        else:
+            error = "invalid username or password"
+            return render_template("login.html", error=error)
+    return render_template("login.html")
+
+@app.route("/logout", methods=["POST", "GET"])
+def logout() -> render_template:
+    session.clear()
+    return render_template("logout.html")
+
+@app.route("/dashboard", methods=["POST", "GET"])
+def dashboard() -> render_template:
+    mysql_cursor = mysql_connector.cursor()
+    if 'username' in session:
+        if request.method == "POST":
+            today = datetime.datetime.today()
+            user_id = get_user_id(session['username'])
+            new_ticket = Ticket(
+                user_id=user_id,
+                assignment=request.form['ticket_name'],
+                created_date=today.strftime('%Y-%m-%d'),
+                due_date=request.form['due_date'],
+                priority=request.form['priority'],
+                status=request.form['status']
+            )
+            mysql_cursor.execute(
+                "INSERT INTO tickets (user_id, title, priority, created_at, due_date, status) VALUES (%s,%s,%s,%s,%s, %s);",
+                (new_ticket.user_id, new_ticket.assignment, new_ticket.priority, new_ticket.created_date, new_ticket.due_date, new_ticket.status),
+            )
+            mysql_connector.commit()
+            return render_template("dashboard.html", username=session['username'], status_message="Success!")
+        mysql_cursor.close()
+        return render_template("dashboard.html", username=session['username'])
+    else:
+        return redirect(url_for('login'))
+
+# @app.route("/ticket_view", methods=["POST", "GET"])
+# def ticket_view():
+#     # REMINDER: set post method in ticket_view.html
+#     return render_template('ticket_view.html')
+#     # <p><input type=text name=ticket_name placeholder="Title"></p>
 
 def main():
     app.config['TEMPLATES_AUTO_RELOAD'] = True
-    app.run(debug = True, use_reloader = False)
-
+    app.run(debug = True, use_reloader = True)
 main()
