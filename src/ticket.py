@@ -8,3 +8,6 @@ class Ticket:
     due_date: str
     priority: str
     status: str
+
+    def sort_ticket(self):
+        pass
