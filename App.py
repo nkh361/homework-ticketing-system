@@ -52,6 +52,21 @@ def get_user_id(username: str) -> None:
 def cache_info(cookie: str, data: any) -> None:
     session[cookie] = data
 
+def sort_tickets(list_of_tickets: list) -> list:
+    # TODO
+    list_of_tickets.sort(key=lambda x: int(x[2].strftime('%Y%m%d')))
+    max_weight, current_end = 0, 0
+    sorted_tickets = []
+    for ticket in list_of_tickets:
+        # SELECT title, priority, created_at, due_date, status FROM tickets WHERE user_id=
+        if ticket[2] >= current_end:
+            current_end = ticket[3]
+            max_weight += ticket[1]
+        print(max_weight)
+
+# test data : [('program', 9, '2023-01-12', '2023-03-04', 'in_progress'), ('sql interview prep', 10, '2023-01-12', '2023-12-10', 'open')]
+# sort_tickets([('program', 9, '2023-01-12', '2023-03-04', 'in_progress'), ('sql interview prep', 10, '2023-01-12', '2023-12-10', 'open')])
+
 @app.route('/')
 def landing() -> render_template:
     if 'username' in session:
@@ -98,7 +113,7 @@ def dashboard() -> render_template:
     mysql_cursor = mysql_connector.cursor()
     if 'username' in session:
         if request.method == "POST":
-            today = datetime.datetime.today()
+            today = datetime.datetime.now()
             user_id = get_user_id(session['username'])
             new_ticket = Ticket(
                 user_id=user_id,
@@ -131,6 +146,7 @@ def ticket_view() -> render_template:
     result = mysql_cursor.fetchall()
     mysql_connector.commit()
     mysql_cursor.close()
+    # print("RESULT: ", result)
     return render_template("ticket_view.html", results=result)
 
 # @app.route("/sorted_tickets", methods=["POST", "GET"])
