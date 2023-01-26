@@ -3,6 +3,9 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: macos-latest
+    env:
+      APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+      DBUSER: ${{ secrets.DBUSER }}
     strategy:
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10"]
@@ -13,9 +16,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      with:
-        APP_SECRET_KEY: test
-        DBUSER: root
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
