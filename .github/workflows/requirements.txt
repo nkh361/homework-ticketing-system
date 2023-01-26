@@ -1,0 +1,4 @@
+Python==3.8.6
+Python==3.8.6
+flask==2.2.2
+mysql.connector==2.2.9
