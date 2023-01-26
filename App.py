@@ -149,11 +149,25 @@ def ticket_view() -> render_template:
     # print("RESULT: ", result)
     return render_template("ticket_view.html", results=result)
 
+@app.route("/showtables", methods=["POST","GET"])
+def showtables() -> list:
+    mysql_cursor=mysql_connector.cursor()
+    query = (
+        "show tables;"
+    )
+    mysql_cursor.execute(query)
+    result = mysql_cursor.fetchall()
+    mysql_connector.commit()
+    mysql_cursor.close()
+    print(result)
+    return result
+
+# [('tickets',), ('users',)]
+
 # @app.route("/sorted_tickets", methods=["POST", "GET"])
 # def sorted_tickets():
 #     return
 
-def main():
+if __name__ == "__main__":
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.run(debug = True, use_reloader = True)
-main()
