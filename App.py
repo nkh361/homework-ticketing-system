@@ -1,7 +1,8 @@
 from src.user import User
 from src.ticket import Ticket
-import mysql.connector, os, datetime
+import mysql.connector, os, re
 from flask import Flask, request, render_template, redirect, url_for, session
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.environ['APP_SECRET_KEY']
@@ -52,20 +53,41 @@ def get_user_id(username: str) -> None:
 def cache_info(cookie: str, data: any) -> None:
     session[cookie] = data
 
+def date_to_int(date: str) -> int:
+    year, month, day = date.split("-")
+    return int(year+month+day)
+
+def int_to_date(date: int) -> str:
+    date = "{}-{}-{}".format(str(date)[:4], str(date)[4:6], str(date)[6:])
+    return date
+
 def sort_tickets(list_of_tickets: list) -> list:
-    # TODO
-    list_of_tickets.sort(key=lambda x: int(x[2].strftime('%Y%m%d')))
-    max_weight, current_end = 0, 0
-    sorted_tickets = []
-    for ticket in list_of_tickets:
-        # SELECT title, priority, created_at, due_date, status FROM tickets WHERE user_id=
-        if ticket[2] >= current_end:
-            current_end = ticket[3]
-            max_weight += ticket[1]
-        print(max_weight)
+    # sort the list of tickets by end time
+    def sort_key(list_of_tickets: list):
+        return datetime.strptime(list_of_tickets[3], '%Y-%m-%d')
+
+    sorted_list = sorted(list_of_tickets, key=sort_key)
+    last_end_time = -1
+    max_weight = 0
+    selected = []
+    for item in sorted_list:
+        """
+        task = item[0]
+        weight = item[1]
+        start = item[2]
+        end = item[3]
+        status = item[4]
+        """
+        start = date_to_int(item[2])
+        end = date_to_int(item[3])
+        if start >= last_end_time:
+            max_weight += item[1]
+            last_end_time = end
+            selected.append((item[0], item[1], int_to_date(start), int_to_date(end), item[4]))
+    return selected
 
 # test data : [('program', 9, '2023-01-12', '2023-03-04', 'in_progress'), ('sql interview prep', 10, '2023-01-12', '2023-12-10', 'open')]
-# sort_tickets([('program', 9, '2023-01-12', '2023-03-04', 'in_progress'), ('sql interview prep', 10, '2023-01-12', '2023-12-10', 'open')])
+# sort_tickets([('program', 9, '2023-01-12', '2023-03-04', 'in_progress'), ('sql interview prep', 10, '2023-01-12', '2023-12-10', 'open'), ('sql interview prep', 10, '2023-01-12', '2021-12-10', 'open')])
 
 @app.route('/')
 def landing() -> render_template:
