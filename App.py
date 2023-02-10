@@ -135,7 +135,7 @@ def dashboard() -> render_template:
     mysql_cursor = mysql_connector.cursor()
     if 'username' in session:
         if request.method == "POST":
-            today = datetime.datetime.now()
+            today = datetime.now()
             user_id = get_user_id(session['username'])
             new_ticket = Ticket(
                 user_id=user_id,
@@ -171,24 +171,22 @@ def ticket_view() -> render_template:
     # print("RESULT: ", result)
     return render_template("ticket_view.html", results=result)
 
-@app.route("/showtables", methods=["POST","GET"])
-def showtables() -> list:
-    mysql_cursor=mysql_connector.cursor()
+@app.route("/sorted_tickets", methods=["POST", "GET"])
+def sorted_tickets():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    mysql_cursor = mysql_connector.cursor()
     query = (
-        "show tables;"
+        "SELECT title, priority, created_at, due_date, status FROM tickets WHERE user_id='{}'".format(get_user_id(session['username']))
     )
     mysql_cursor.execute(query)
     result = mysql_cursor.fetchall()
     mysql_connector.commit()
     mysql_cursor.close()
-    print(result)
-    return result
-
-# [('tickets',), ('users',)]
-
-# @app.route("/sorted_tickets", methods=["POST", "GET"])
-# def sorted_tickets():
-#     return
+    
+    sorted_results = sort_tickets(result)
+    return render_template("sorted_tickets.html", results=sorted_results)
+    
 
 if __name__ == "__main__":
     app.config['TEMPLATES_AUTO_RELOAD'] = True
