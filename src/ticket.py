@@ -9,5 +9,4 @@ class Ticket:
     priority: str
     status: str
 
-    def sort_ticket(self):
-        pass
+        
