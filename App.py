@@ -1,3 +1,4 @@
+#!usr/bin/python3
 from src.user import User
 from src.ticket import Ticket
 import mysql.connector, os, re
