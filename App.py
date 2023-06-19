@@ -167,10 +167,11 @@ def ticket_view() -> render_template:
     )
     mysql_cursor.execute(query)
     result = mysql_cursor.fetchall()
-    mysql_connector.commit()
-    mysql_cursor.close()
-    # print("RESULT: ", result)
-    return render_template("ticket_view.html", results=result)
+    if result != None:
+        mysql_connector.commit()
+        mysql_cursor.close()
+        return render_template("ticket_view.html", results=result)
+    return render_template("ticket_view.html", results=[None])
 
 @app.route("/sorted_tickets", methods=["POST", "GET"])
 def sorted_tickets():
