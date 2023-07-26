@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from src.user import User
 from src.ticket import Ticket
+from src.project import Project
 import mysql.connector, os, re
 from flask import Flask, request, render_template, redirect, url_for, session
 from datetime import datetime
@@ -17,6 +18,7 @@ try:
     print("Database connection: ", mysql_connector.is_connected())
 except:
     print("MySQL connection failed.")
+
 
 def validate_user(current_user: User) -> bool:
     mysql_cursor = mysql_connector.cursor()
@@ -60,35 +62,38 @@ def date_to_int(date: str) -> int:
 
 def int_to_date(date: int) -> str:
     date = "{}-{}-{}".format(str(date)[:4], str(date)[4:6], str(date)[6:])
-    return date
 
 def sort_tickets(list_of_tickets: list) -> list:
-    # sort the list of tickets by end time
-    def sort_key(list_of_tickets: list):
-        return datetime.strptime(list_of_tickets[3], '%Y-%m-%d')
+        # sort the list of tickets by end time
+        def sort_key(list_of_tickets: list):
+            return datetime.strptime(list_of_tickets[3], '%Y-%m-%d')
 
-    sorted_list = sorted(list_of_tickets, key=sort_key)
-    last_end_time = -1
-    max_weight = 0
-    selected = []
-    for item in sorted_list:
-        """
-        task = item[0]
-        weight = item[1]
-        start = item[2]
-        end = item[3]
-        status = item[4]
-        """
-        start = date_to_int(item[2])
-        end = date_to_int(item[3])
-        if start >= last_end_time:
-            max_weight += item[1]
-            last_end_time = end
-            selected.append((item[0], item[1], int_to_date(start), int_to_date(end), item[4]))
-    return selected
+        sorted_list = sorted(list_of_tickets, key=sort_key)
+        last_end_time = -1
+        max_weight = 0
+        selected = []
+        for item in sorted_list:
+            """
+            task = item[0]
+            weight = item[1]
+            start = item[2]
+            end = item[3]
+            status = item[4]
+            """
+            start = date_to_int(item[2])
+            end = date_to_int(item[3])
+            if start >= last_end_time:
+                max_weight += item[1]
+                last_end_time = end
+                selected.append((item[0], item[1], int_to_date(start), int_to_date(end), item[4]))
+        return selected
 
-# test data : [('program', 9, '2023-01-12', '2023-03-04', 'in_progress'), ('sql interview prep', 10, '2023-01-12', '2023-12-10', 'open')]
-# sort_tickets([('program', 9, '2023-01-12', '2023-03-04', 'in_progress'), ('sql interview prep', 10, '2023-01-12', '2023-12-10', 'open'), ('sql interview prep', 10, '2023-01-12', '2021-12-10', 'open')])
+def find_project_id(project_name) -> None:
+    mysql_cursor = mysql_connector.cursor()
+    query = "SELECT project_id FROM projects WHERE project_name = {};".format(project_name)
+    results = mysql_cursor.execute(query)
+    return results
+
 
 @app.route('/')
 def landing() -> render_template:
@@ -139,6 +144,7 @@ def dashboard() -> render_template:
             today = datetime.now()
             user_id = get_user_id(session['username'])
             new_ticket = Ticket(
+                project_name=request.form['project_name'],
                 user_id=user_id,
                 assignment=request.form['ticket_name'],
                 created_date=today.strftime('%Y-%m-%d'),
@@ -146,16 +152,48 @@ def dashboard() -> render_template:
                 priority=request.form['priority'],
                 status=request.form['status']
             )
-            mysql_cursor.execute(
-                "INSERT INTO tickets (user_id, title, priority, created_at, due_date, status) VALUES (%s,%s,%s,%s,%s, %s);",
-                (new_ticket.user_id, new_ticket.assignment, new_ticket.priority, new_ticket.created_date, new_ticket.due_date, new_ticket.status),
-            )
+            #TODO: FIX -- create a default project table for personal tickets
+            # project_id = find_project_id(new_ticket.project_name)
+        
+            # mysql_cursor.execute(
+            #     "INSERT INTO tickets (project_id, ticket_id, user_id, title, priority, created_at, due_date, status) VALUES (%s,%s,%s,%s,%s,%s, %s);",
+            #     (project_id, new_ticket.ticket_id, new_ticket.user_id, new_ticket.assignment, new_ticket.priority, new_ticket.created_date, new_ticket.due_date, new_ticket.status),
+            # )
+
+            
             mysql_connector.commit()
-            return render_template("dashboard.html", username=session['username'], status_message="Success!")
-        mysql_cursor.close()
+            mysql_cursor.close()
         return render_template("dashboard.html", username=session['username'])
     else:
         return redirect(url_for('login'))
+
+# TODO: create project page, view project page (similar to ticket view)
+
+@app.route("/projects", methods=["POST", "GET"])
+def project_view() -> render_template:
+    mysql_cursor = mysql_connector.cursor()
+    if 'username' in session:
+        query = (
+            "SELECT project_name, project_id FROM projects WHERE user_id={}".format(get_user_id(session['username']))
+        )
+        mysql_cursor.execute(query)
+        project_result = mysql_cursor.fetchall()
+
+        if request.method == "POST":
+            new_project = Project(
+                user_id=get_user_id(session['username']),
+                project_name=request.form['project_name']
+            )
+            mysql_cursor.execute(
+                "INSERT INTO projects (user_id, project_name, project_id) VALUES (%s, %s, %s);",
+                (new_project.user_id, new_project.project_name, new_project.project_id)
+            )
+            mysql_connector.commit()
+            mysql_cursor.close()
+            status_message = "Success!"
+            
+        return render_template("projects.html", status_message=status_message, results=project_result)
+
 
 @app.route("/ticket_view", methods=["POST", "GET"])
 def ticket_view() -> render_template:
@@ -187,6 +225,7 @@ def sorted_tickets():
     mysql_cursor.close()
     
     sorted_results = sort_tickets(result)
+    print(sorted_results)
     return render_template("sorted_tickets.html", results=sorted_results)
     
 

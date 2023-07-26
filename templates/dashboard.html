@@ -7,18 +7,24 @@
   </head>
   <body>
     <h1>Welcome, {{ username }}</h1>
-    <a href="{{url_for('logout')}}">Log out</a>
     <a href="{{url_for('ticket_view')}}">View tickets</a>
-    <form method="POST" action="">
+    <a href="{{url_for('logout')}}">Log out</a>
+    <h2>Make a new ticket</h2>
+    <form name=tickets method="POST" action="">
       <p><input type=text name=ticket_name placeholder="Title"></p>
+      <p><input type=text name=project_name placeholder="Project name (optional)"></p>
       <p><input type="datetime" name=due_date placeholder="Due date YYYY-MM-DD"></p>
       <p><input type="number" name=priority placeholder="Priority (1-10)"></p>
       <label for="status">Choose status:</label><br>
-        <select name="status" id="stauts">
+        <select name="status" id="status">
           <option value="open">Open</option>
           <option value="closed">Closed</option>
           <option value="in_progress">In Progress</option>
         </select>
+      <p><input type=submit value=submit></p>
+    </form>
+    <form name=projects method="POST">
+      <p><input type=text name=project_name placeholder="Enter a project name"></p>
       <p><input type=submit value=submit></p>
     </form>
     <p style="color: green">{{ status_message }}</p>

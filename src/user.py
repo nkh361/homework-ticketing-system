@@ -22,4 +22,3 @@ class User:
         rand = random.randint(1, 1000)
         user_id = '%d-%d' % (timestamp, rand)
         return user_id
-    

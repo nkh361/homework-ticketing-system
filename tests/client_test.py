@@ -11,8 +11,8 @@ class FlaskTestClient(unittest.TestCase):
 
     def test_valid_login(self):
         response = self.client.post('/login', data={
-            'username': 'test',
-            'password': 'test'
+            'username': 'test_blank',
+            'password': '123'
         })
         self.assertEqual(response.status_code, 302) # code for redirect
         self.assertEqual(response.location, '/dashboard')
