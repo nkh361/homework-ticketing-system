@@ -194,7 +194,6 @@ def project_view() -> render_template:
             
         return render_template("projects.html", status_message=status_message, results=project_result)
 
-
 @app.route("/ticket_view", methods=["POST", "GET"])
 def ticket_view() -> render_template:
     if 'username' not in session:
