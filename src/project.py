@@ -3,8 +3,9 @@ import time, random
 
 @dataclass
 class Project:
-    user_id: str
-    project_name: str
+    owner: str
+    name: str
+    team_id: str
     project_id: str = None
 
     def __post_init__(self):
