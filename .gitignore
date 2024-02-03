@@ -3,3 +3,5 @@
 
 # db stuff
 *.db
+
+__pycache__
