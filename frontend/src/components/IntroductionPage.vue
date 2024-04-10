@@ -1,5 +1,8 @@
 <template>
-  <div class="hello">
+  <div>
+    <header>
+      <title>OFA</title>
+    </header>
     <h1>{{ msg }}</h1>
     <p>
       Welcome To The Future of Teamwork.
@@ -10,17 +13,17 @@
       This is a task management system to get s#it done.
     </p>
     <h3>Join Today To Achieve Your Goals</h3>
-      <router-link :to="'RegisterUser'">Register</router-link>
+      <!-- <router-link :to="'RegisterUser'">Register</router-link> -->
   </div>
 </template>
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: 'LandingMessage',
   props: {
     msg: String
   }
-}
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

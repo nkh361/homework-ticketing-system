@@ -1,17 +1,20 @@
 <template>
   <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="One For All Co-working"/>
+  <LandingMessage :msg="'One for All Coworking'"/>
+  <RegisterUser></RegisterUser>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import LandingMessage from './components/IntroductionPage.vue';
+import RegisterUser from './components/RegisterUser.vue';
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    LandingMessage,
+    RegisterUser
   }
-}
+};
 </script>
 
 <style>

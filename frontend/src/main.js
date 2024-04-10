@@ -1,17 +1,20 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+
+import LandingPage from './components/IntroductionPage.vue'
 import RegisterUser from './components/RegisterUser.vue'
+import UserDashboard from './components/UserDashboard.vue'
 
 const routes = [
-  { path: '/', component: HelloWorld },
-  { path: '/register', component: RegisterUser}
+  { path: '/', name: 'Landing', component: LandingPage },
+  { path: '/register', name: 'Register', component: RegisterUser },
+  { path: '/dashboard', name: 'Dashboard', component: UserDashboard}
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
 const app = createApp(App);
