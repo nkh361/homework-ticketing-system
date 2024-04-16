@@ -2,11 +2,20 @@
 from src.user import User
 from src.ticket import Ticket
 import mysql.connector, os, re
-from flask import Flask, request, render_template, redirect, url_for, session
+from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 from datetime import datetime
+
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.secret_key = os.environ['APP_SECRET_KEY']
+
+CORS(app, resources={r'/*': {'origins': '*'}})
+
+# sanity check
+@app.route('/ping', methods=["GET"])
+def ping_pong():
+    return jsonify('pong!')
 
 try:
     mysql_connector = mysql.connector.connect(
@@ -21,7 +30,7 @@ except:
 def validate_user(current_user: User) -> bool:
     mysql_cursor = mysql_connector.cursor()
     hash_check = current_user.hash_password()
-    query = ("SELECT username FROM users WHERE username=%s AND password=%s;")
+    query = ("SELECT username FROM user WHERE username=%s AND password=%s;")
     mysql_cursor.execute(query, (current_user.username, hash_check))
     result = mysql_cursor.fetchone()
     mysql_cursor.close()
@@ -35,16 +44,26 @@ def add_user(new_user: User) -> None:
     username = new_user.username
     hashed_password = new_user.hash_password()
     user_id = new_user.user_id
+    email = new_user.email
     mysql_cursor.execute(
-        "INSERT INTO users (username, password, user_id) VALUES (%s, %s, %s);", (username, hashed_password, user_id)
+        "INSERT INTO user (username, password, userID, email) VALUES (%s, %s, %s, %s);", (username, hashed_password, user_id, email)
     )
     mysql_connector.commit()
     mysql_cursor.close()
     print("added")
 
+def get_user_email(username: str) -> str:
+    mysql_cursor = mysql_connector.cursor()
+    query = "SELECT email FROM user WHERE username='{}".format(username)
+    mysql_cursor.execute(query)
+    result = mysql_cursor.fetchall()
+    mysql_connector.commit()
+    mysql_cursor.close()
+    return result[0][2]
+
 def get_user_id(username: str) -> None:
     mysql_cursor = mysql_connector.cursor()
-    query = "SELECT user_id FROM users WHERE username='{}'".format(username)
+    query = "SELECT user_id FROM user WHERE username='{}'".format(username)
     mysql_cursor.execute(query)
     result = mysql_cursor.fetchall()
     mysql_connector.commit()
@@ -97,34 +116,66 @@ def landing() -> render_template:
     else:
         return redirect(url_for('login'))
 
+# @app.route('/register', methods=["POST", "GET"])
+# def register() -> render_template:
+#     if request.method == "POST":
+#         new_username = request.form['username']
+#         new_password = request.form['password']
+#         new_user = User(
+#             username=new_username,
+#             password=new_password
+#         )
+#         add_user(new_user)
+#         cache_info("username", new_user.username)
+#         cache_info("user_id", new_user.user_id)
+#         return redirect(url_for('dashboard'))
+#     else:
+#         return render_template("register.html")
+    
 @app.route('/register', methods=["POST", "GET"])
-def register() -> render_template:
+def register() -> jsonify:
     if request.method == "POST":
-        new_username = request.form['username']
-        new_password = request.form['password']
-        new_user = User(
-            username=new_username,
-            password=new_password
-        )
-        add_user(new_user)
-        cache_info("username", new_user.username)
-        cache_info("user_id", new_user.user_id)
-        return redirect(url_for('dashboard'))
-    else:
-        return render_template("register.html")
+        data = request.json
+        try:
+            new_username = data["username"]
+            new_password = data["password"]
+            new_email = data["email"]
+            new_user = User(
+                username=new_username,
+                password=new_password,
+                email=new_email
+            )
+            add_user(new_user)
+            # print("uhh this is in post: {}".format(data))
+            return jsonify({"Status": 200})
+
+        except InterruptedError as e:
+            mysql_connector.rollback()
+            return jsonify({"STATUS": 200})
+    
+    return jsonify({"msg": "keep it get"})
 
 @app.route("/login", methods=["POST", "GET"])
 def login() -> render_template:
     if request.method == "POST":
-        current_username = request.form['username']
-        current_password = request.form['password']
-        if validate_user(User(username=current_username, password=current_password)):
-            cache_info("username", current_username)
-            return redirect(url_for('dashboard'))
-        else:
-            error = "invalid username or password"
-            return render_template("login.html", error=error)
-    return render_template("login.html")
+        data = request.json
+        try:
+            print(data)
+            current_username = data["username"]
+            current_password = data["password"]
+            current_email = get_user_email(current_username)
+            curr_user = User(
+                username=current_username,
+                password=current_password,
+                email = current_email
+            )
+            if validate_user(curr_user):
+                return jsonify({"STATUS":200})
+        except InterruptedError as e:
+            return jsonify({e: 400})
+    else:
+       return jsonify({"STATUS": 400})
+    
 
 @app.route("/logout", methods=["POST", "GET"])
 def logout() -> render_template:
@@ -147,7 +198,7 @@ def dashboard() -> render_template:
                 status=request.form['status']
             )
             mysql_cursor.execute(
-                "INSERT INTO tickets (user_id, title, priority, created_at, due_date, status) VALUES (%s,%s,%s,%s,%s, %s);",
+                "INSERT INTO ticket (user_id, title, priority, created_at, due_date, status) VALUES (%s,%s,%s,%s,%s, %s);",
                 (new_ticket.user_id, new_ticket.assignment, new_ticket.priority, new_ticket.created_date, new_ticket.due_date, new_ticket.status),
             )
             mysql_connector.commit()
@@ -191,5 +242,5 @@ def sorted_tickets():
     
 
 if __name__ == "__main__":
-    app.config['TEMPLATES_AUTO_RELOAD'] = True
-    app.run(debug = True, use_reloader = True)
+    # app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.run(debug = True, use_reloader = False)

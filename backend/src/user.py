@@ -5,6 +5,7 @@ import hashlib, time, random
 class User:
     username: str
     password: str
+    email: str
     user_id: str = None
 
     def __post_init__(self):
