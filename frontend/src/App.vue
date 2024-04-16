@@ -1,18 +1,27 @@
 <template>
   <img alt="Vue logo" src="./assets/logo.png">
   <LandingMessage :msg="'One for All Coworking'"/>
-  <RegisterUser></RegisterUser>
+  <!-- <RegisterUser></RegisterUser> -->
+  <LoginUser>Login</LoginUser>
+  <!-- <RegisterUser></RegisterUser>
+  <UserDashboard></UserDashboard>
+  <a href="/dashboard">Dashboard</a>
+  <LoginUser></LoginUser> -->
 </template>
 
 <script>
 import LandingMessage from './components/IntroductionPage.vue';
-import RegisterUser from './components/RegisterUser.vue';
+// import RegisterUser from './components/RegisterUser.vue';
+// import UserDashboard from './components/UserDashboard.vue';
+import LoginUser from './components/LoginUser.vue';
 
 export default {
   name: 'App',
   components: {
     LandingMessage,
-    RegisterUser
+    // RegisterUser,
+    // UserDashboard,
+    LoginUser
   }
 };
 </script>

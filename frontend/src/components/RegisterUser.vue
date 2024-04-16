@@ -24,16 +24,6 @@ export default {
     };
   },
   methods: {
-    // registerUser() {
-    //   const path = 'http://127.0.0.1:5000/register'
-    //   axios.get(path, this.registerFormData)
-    //   .then((res) => {
-    //     console.log(res.data)
-    //   })
-    //   .catch((err) => {
-    //     console.error(err)
-    //   })
-    // }
     registerUser() {
       const path = 'http://127.0.0.1:5000/register'
       axios.post(path, {

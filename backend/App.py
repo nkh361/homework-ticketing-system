@@ -52,7 +52,14 @@ def add_user(new_user: User) -> None:
     mysql_cursor.close()
     print("added")
 
-
+def get_user_email(username: str) -> str:
+    mysql_cursor = mysql_connector.cursor()
+    query = "SELECT email FROM user WHERE username='{}".format(username)
+    mysql_cursor.execute(query)
+    result = mysql_cursor.fetchall()
+    mysql_connector.commit()
+    mysql_cursor.close()
+    return result[0][2]
 
 def get_user_id(username: str) -> None:
     mysql_cursor = mysql_connector.cursor()
@@ -139,26 +146,36 @@ def register() -> jsonify:
                 email=new_email
             )
             add_user(new_user)
-
             # print("uhh this is in post: {}".format(data))
             return jsonify({"Status": 200})
+
         except InterruptedError as e:
             mysql_connector.rollback()
             return jsonify({"STATUS": 200})
+    
     return jsonify({"msg": "keep it get"})
 
 @app.route("/login", methods=["POST", "GET"])
 def login() -> render_template:
     if request.method == "POST":
-        current_username = request.form['username']
-        current_password = request.form['password']
-        if validate_user(User(username=current_username, password=current_password)):
-            cache_info("username", current_username)
-            return redirect(url_for('dashboard'))
-        else:
-            error = "invalid username or password"
-            return render_template("login.html", error=error)
-    return render_template("login.html")
+        data = request.json
+        try:
+            print(data)
+            current_username = data["username"]
+            current_password = data["password"]
+            current_email = get_user_email(current_username)
+            curr_user = User(
+                username=current_username,
+                password=current_password,
+                email = current_email
+            )
+            if validate_user(curr_user):
+                return jsonify({"STATUS":200})
+        except InterruptedError as e:
+            return jsonify({e: 400})
+    else:
+       return jsonify({"STATUS": 400})
+    
 
 @app.route("/logout", methods=["POST", "GET"])
 def logout() -> render_template:
